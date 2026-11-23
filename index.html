@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>許薰元 Homelab 作品集</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single reading column styled like a network admin's lab binder — topology sheet first, then project "port cards" tagged with real addresses. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#17212b; --muted:#5b6876; --line:#d7dde4;
+  --accent:#1f5fa8; --accent-soft:#e3edf8; --ok:#1d7a52; --warn:#b26a12; --atk:#b3372f;
+  --f-display:"Space Grotesk","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f151b; --panel:#161e26; --ink:#e4eaf0; --muted:#94a3b2; --line:#2a3642;
+  --accent:#6ea8ec; --accent-soft:#1b2b3d; --ok:#4cc08a; --warn:#e0a24a; --atk:#ec7a70; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151b; --panel:#161e26; --ink:#e4eaf0; --muted:#94a3b2; --line:#2a3642;
+  --accent:#6ea8ec; --accent-soft:#1b2b3d; --ok:#4cc08a; --warn:#e0a24a; --atk:#ec7a70; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:920px;margin:0 auto;padding-block:48px 72px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:clamp(2rem,5vw,2.9rem);letter-spacing:-.01em}
+h2{font-size:1.5rem}
+h3{font-size:1.15rem}
+p{margin:0}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+/* hero */
+.hero{display:flex;flex-direction:column;gap:16px}
+.hero .lead{font-size:1.1rem;color:var(--muted);max-width:62ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:4px 0 0}
+.chips li{font-family:var(--f-mono);font-size:.8rem;padding:3px 10px;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 28px;font-size:.92rem;color:var(--muted)}
+.facts b{color:var(--ink);font-weight:500}
+/* topology */
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.sheet .scroll{overflow-x:auto}
+.sheet svg{display:block;min-width:640px;width:100%;height:auto}
+svg .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+svg .hl{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+svg .atk{fill:var(--panel);stroke:var(--atk);stroke-width:1.5;stroke-dasharray:5 3}
+svg .wire{stroke:var(--muted);stroke-width:1.5;fill:none}
+svg .t{fill:var(--ink);font-family:var(--f-body);font-size:13px;font-weight:500}
+svg .s{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+svg .a{fill:var(--atk);font-family:var(--f-mono);font-size:11px}
+svg .zone{fill:none;stroke:var(--accent);stroke-width:1;stroke-dasharray:3 4}
+svg .zl{fill:var(--accent);font-family:var(--f-mono);font-size:11px}
+.caption{font-size:.88rem;color:var(--muted)}
+/* projects */
+.section{display:flex;flex-direction:column;gap:20px}
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px 22px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 16px}
+.card .tag{font-family:var(--f-mono);font-size:.78rem;color:var(--accent)}
+.card ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.card li::marker{color:var(--muted)}
+.stack{display:flex;flex-wrap:wrap;gap:6px}
+.stack span{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);background:var(--bg);border-radius:3px;padding:1px 8px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.8rem}
+.flow span{border:1px solid var(--line);border-radius:4px;padding:2px 8px;background:var(--bg)}
+.flow span.k{border-color:var(--atk);color:var(--atk)}
+.flow span.d{border-color:var(--ok);color:var(--ok)}
+.flow i{font-style:normal;color:var(--muted)}
+.lesson{font-size:.9rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:10px}
+.lesson b{color:var(--warn);font-weight:500}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.tw{overflow-x:auto}
+footer{font-size:.9rem;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+@media (min-width:760px){.grid.two{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="eyebrow">Portfolio · MIS / Network / Security</span>
+  <h1>許薰元</h1>
+  <p class="lead">彰化師範大學數學系，現於數位行銷公司技術部實習。工作之外自己架了一套多主機實驗室，從 Linux 強化、Windows 網域到攻防偵測都實際動手做過，並把每一步整理成文件。</p>
+  <div class="facts">
+    <span>目前：<b>技術部實習生（2026/08–）</b></span>
+    <span>準備中：<b>Cisco CCNA</b></span>
+    <span>GitHub：<b><a href="https://github.com/HHY-2404" target="_blank" rel="noopener">HHY-2404</a></b></span>
+  </div>
+  <ul class="chips" aria-label="主要技能">
+    <li>Linux</li><li>Windows Server / AD</li><li>VMware</li><li>FortiGate</li><li>UniFi</li><li>nmap</li><li>Wireshark</li><li>Fail2ban</li><li>Python</li><li>Git</li>
+  </ul>
+</header>
+
+<section class="section" aria-labelledby="topo">
+  <div><span class="eyebrow">Lab topology</span><h2 id="topo">實驗室架構</h2></div>
+  <div class="sheet">
+    <div class="scroll">
+    <svg viewBox="0 0 760 360" role="img" aria-label="實驗室網路拓樸：Windows 主機透過 VMware NAT 網段 192.168.176.0/24 連接 Ubuntu、Rocky、CentOS 與 Kali；另有 Windows AD 網域與實體 FortiGate 防火牆">
+      <!-- host -->
+      <rect class="hl" x="290" y="14" width="180" height="50" rx="6"/>
+      <text class="t" x="380" y="36" text-anchor="middle">Windows 主機</text>
+      <text class="s" x="380" y="54" text-anchor="middle">VMware Workstation Pro</text>
+      <line class="wire" x1="380" y1="64" x2="380" y2="96"/>
+      <!-- NAT zone -->
+      <rect class="zone" x="20" y="96" width="720" height="150" rx="8"/>
+      <text class="zl" x="34" y="114">VMnet8 NAT · 192.168.176.0/24</text>
+      <line class="wire" x1="90" y1="140" x2="670" y2="140"/>
+      <!-- VMs -->
+      <line class="wire" x1="110" y1="140" x2="110" y2="160"/>
+      <rect class="box" x="30" y="160" width="160" height="70" rx="6"/>
+      <text class="t" x="110" y="184" text-anchor="middle">Ubuntu Server</text>
+      <text class="s" x="110" y="202" text-anchor="middle">.129 · SSH :2222</text>
+      <text class="s" x="110" y="218" text-anchor="middle">掃描偵測 / Fail2ban</text>
+
+      <line class="wire" x1="290" y1="140" x2="290" y2="160"/>
+      <rect class="box" x="210" y="160" width="160" height="70" rx="6"/>
+      <text class="t" x="290" y="184" text-anchor="middle">Rocky Linux</text>
+      <text class="s" x="290" y="202" text-anchor="middle">.130 · firewalld</text>
+      <text class="s" x="290" y="218" text-anchor="middle">掃描偵測</text>
+
+      <line class="wire" x1="470" y1="140" x2="470" y2="160"/>
+      <rect class="box" x="390" y="160" width="160" height="70" rx="6"/>
+      <text class="t" x="470" y="184" text-anchor="middle">CentOS Stream</text>
+      <text class="s" x="470" y="202" text-anchor="middle">.131 · MantisBT</text>
+      <text class="s" x="470" y="218" text-anchor="middle">nginx + MariaDB</text>
+
+      <line class="wire" x1="650" y1="140" x2="650" y2="160"/>
+      <rect class="atk" x="570" y="160" width="160" height="70" rx="6"/>
+      <text class="t" x="650" y="184" text-anchor="middle">Kali Linux</text>
+      <text class="a" x="650" y="202" text-anchor="middle">.133 · 攻擊端</text>
+      <text class="a" x="650" y="218" text-anchor="middle">nmap / hydra</text>
+
+      <!-- AD zone -->
+      <rect class="zone" x="20" y="270" width="470" height="78" rx="8"/>
+      <text class="zl" x="34" y="288">AD 網域 · sayms.local</text>
+      <rect class="box" x="34" y="296" width="140" height="42" rx="6"/>
+      <text class="t" x="104" y="315" text-anchor="middle">DC · Server 2016</text>
+      <text class="s" x="104" y="331" text-anchor="middle">樹系根網域</text>
+      <rect class="box" x="186" y="296" width="140" height="42" rx="6"/>
+      <text class="t" x="256" y="315" text-anchor="middle">DC · Server 2019</text>
+      <text class="s" x="256" y="331" text-anchor="middle">第二台 DC</text>
+      <rect class="box" x="338" y="296" width="140" height="42" rx="6"/>
+      <text class="t" x="408" y="315" text-anchor="middle">Windows 10</text>
+      <text class="s" x="408" y="331" text-anchor="middle">網域用戶端</text>
+
+      <!-- FortiGate -->
+      <rect class="box" x="520" y="282" width="210" height="56" rx="6"/>
+      <text class="t" x="625" y="306" text-anchor="middle">FortiGate 60D（實體）</text>
+      <text class="s" x="625" y="324" text-anchor="middle">FortiOS 6.0 · NSE4 章節練習</text>
+    </svg>
+    </div>
+    <p class="caption">所有 VM 使用固定 IP，彼此可互相 ping 與 SSH。攻擊練習只在這個隔離網段內進行，不碰共用的外部網路。</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="proj">
+  <div><span class="eyebrow">Projects</span><h2 id="proj">專案</h2></div>
+  <div class="grid">
+
+    <article class="card">
+      <header><h3>攻擊偵測自動開單</h3><span class="tag">Kali → 偵測 → MantisBT</span></header>
+      <p>用 Kali 對實驗室主機發動掃描與暴力破解，自己寫偵測程式抓出來，並自動在問題追蹤系統開單，不需要人一直盯著終端機。</p>
+      <div class="flow" aria-label="偵測流程一">
+        <span class="k">nmap 掃描</span><i>→</i><span class="d">scapy 偵測器（systemd）</span><i>→</i><span>report_issue.py</span><i>→</i><span>MantisBT REST API</span>
+      </div>
+      <div class="flow" aria-label="偵測流程二">
+        <span class="k">hydra 暴力破解</span><i>→</i><span class="d">Fail2ban 封鎖</span><i>→</i><span>自訂 action</span><i>→</i><span>MantisBT 開單</span>
+      </div>
+      <ul>
+        <li>偵測器做成 systemd 服務，故障時自動重啟；Windows 主機端另用工作排程器開機執行。</li>
+        <li>MantisBT 依主機分專案（Ubuntu、Rocky/CentOS、Windows 監視），開單內容含來源 IP 與被掃的埠。</li>
+        <li>第一次 nmap 掃描就發現內部 DNS 服務對同網段開放，已停用並修補。</li>
+      </ul>
+      <p class="lesson"><b>踩到的坑：</b>sudo 與 systemd 不會讀使用者的 ~/.bashrc，環境變數抓不到 API 金鑰，改成從權限受控的設定檔讀取。多網卡主機上 scapy 要明確指定網卡，否則會監聽錯介面。</p>
+      <div class="stack"><span>Python</span><span>scapy</span><span>requests</span><span>systemd</span><span>Fail2ban</span><span>MantisBT</span></div>
+    </article>
+
+    <div class="grid two">
+      <article class="card">
+        <header><h3>三台 Linux 強化</h3><span class="tag">Ubuntu · Rocky · CentOS</span></header>
+        <ul>
+          <li>SSH 只允許金鑰登入，改到 2222 埠並加上速率限制</li>
+          <li>防火牆預設拒絕，只開放實驗室網段（ufw / firewalld）</li>
+          <li>Fail2ban：3 次失敗、5 分鐘內，封鎖 1 小時</li>
+          <li>RHEL 系統需用 semanage 註冊新的 SSH 埠給 SELinux</li>
+        </ul>
+        <div class="stack"><span>OpenSSH</span><span>ufw</span><span>firewalld</span><span>SELinux</span></div>
+      </article>
+
+      <article class="card">
+        <header><h3>MIS 維運清單</h3><span class="tag">三台都做到一致</span></header>
+        <ul>
+          <li>群組共用資料夾（SGID）與精細 sudoers 權限</li>
+          <li>cron 每日備份，並實際刪檔再還原演練</li>
+          <li>logrotate、密碼複雜度與 90 天到期</li>
+          <li>只裝安全性更新的自動更新、服務掛掉 5 秒內自動重啟</li>
+        </ul>
+        <div class="stack"><span>cron</span><span>tar</span><span>journalctl</span><span>PAM</span></div>
+      </article>
+
+      <article class="card">
+        <header><h3>Windows AD 網域</h3><span class="tag">sayms.local</span></header>
+        <ul>
+          <li>Server 2016 建立樹系根網域，Server 2019 加入為第二台 DC</li>
+          <li>Windows 10 加入網域，建立網域使用者帳號</li>
+          <li>排除 VMware 安裝問題：自動安裝檔錯誤、NVMe 虛擬磁碟造成藍屏，改用 SATA 解決</li>
+        </ul>
+        <div class="stack"><span>AD DS</span><span>DNS</span><span>Windows Server</span></div>
+      </article>
+
+      <article class="card">
+        <header><h3>FortiGate 60D 重置與設定</h3><span class="tag">實體設備</span></header>
+        <ul>
+          <li>二手設備密碼未知、雲端帳號綁在前任擁有者，嘗試過維護帳號與 TFTP 都不行</li>
+          <li>最後用背板 RESET 孔完成原廠重置，並跑磁碟檢查</li>
+          <li>依 NSE4 章節練習系統設定、防火牆政策、NAT 與路由</li>
+        </ul>
+        <div class="stack"><span>FortiOS 6.0</span><span>Console CLI</span></div>
+      </article>
+
+      <article class="card">
+        <header><h3>主機流量觀察</h3><span class="tag">Wireshark</span></header>
+        <ul>
+          <li>比對 VM 內部流量與實際 Wi-Fi 對外流量的差異</li>
+          <li>用 TLS Client Hello 篩出 SNI，找出背景追蹤服務的連線</li>
+          <li>觀察到 TCP 重傳、NTP 對時與 QUIC 協定</li>
+        </ul>
+        <div class="stack"><span>Wireshark</span><span>tcpdump</span><span>TLS</span></div>
+      </article>
+
+      <article class="card">
+        <header><h3>Python 小專案</h3><span class="tag">GitHub</span></header>
+        <ul>
+          <li><a href="https://github.com/HHY-2404/AI-Retail-Analytics-System" target="_blank" rel="noopener">AI-Retail-Analytics-System</a>：YOLOv8 偵測顧客體型，搭配 Gemini API 與 Streamlit 給穿搭配色建議</li>
+          <li>Discord 機器人：提醒功能與 AI 問答，在 Windows 背景常駐執行</li>
+          <li>LINE 機器人：每日天氣推播、店家查詢，用 Flask 接 webhook</li>
+        </ul>
+        <div class="stack"><span>YOLOv8</span><span>Streamlit</span><span>discord.py</span><span>Flask</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="ir">
+  <div><span class="eyebrow">Incident research</span><h2 id="ir">資安事件研究</h2></div>
+  <p class="caption">整理四種 WordPress／PHP 入侵手法的目的、手法與影響。案例 A 為實際參與排查，B、C 為研讀過往事件的調查報告，D 為公開漏洞研究。客戶名稱、帳號與 IP 均已移除。</p>
+  <div class="grid two">
+    <article class="card">
+      <header><h3>A｜寄生 SEO 後門</h3><span class="tag">實際參與排查</span></header>
+      <ul>
+        <li><b>目的：</b>借用網站的搜尋排名推銷垃圾內容，同時保留遠端控制權</li>
+        <li><b>手法：</b>偽裝成 SEO 外掛並從外掛清單隱藏自己；劫持 sitemap、產生垃圾頁面；特定網址可免密碼以管理員登入，另一條路徑可遠端執行任意程式；指揮伺服器位址存在區塊鏈合約上，封鎖網域也擋不住</li>
+        <li><b>影響：</b>網站實質上完全淪陷，需移除後門、全面更換密碼與金鑰並清查殘留</li>
+      </ul>
+      <p class="lesson"><b>我做的事：</b>從備份清查帳號與登入紀錄，在隔離環境靜態閱讀後門程式碼（不執行），整理成鑑識報告。</p>
+    </article>
+    <article class="card">
+      <header><h3>B｜Webshell 後門</h3><span class="tag">研讀事件報告</span></header>
+      <ul>
+        <li><b>目的：</b>在伺服器上建立長期可用的遠端操作入口</li>
+        <li><b>手法：</b>盜用管理員工作階段進入；植入檔案管理型 webshell 並偽裝成圖片、複製多份；把惡意碼注入既有的核心檔案</li>
+        <li><b>影響：</b>攻擊者可瀏覽、修改檔案與執行指令，潛伏約三週才被發現</li>
+      </ul>
+      <p class="lesson"><b>學到的重點：</b>清除要分三種處理：純惡意檔刪除、被注入的檔案只切除惡意段落、核心檔用官方版覆蓋；換 SALT 才能讓偷走的 cookie 失效。</p>
+    </article>
+    <article class="card">
+      <header><h3>C｜帳號入侵與多層持久化</h3><span class="tag">研讀事件報告</span></header>
+      <ul>
+        <li><b>目的：</b>挾持網站並確保管理員清不乾淨</li>
+        <li><b>手法：</b>盜用合法管理員帳號 → 安裝多個惡意外掛 → 建立會自動恢復的排程 → 建立大量假帳號並提權</li>
+        <li><b>影響：</b>後門分散在多處，只清一個點沒有用，駐留約 54 天</li>
+      </ul>
+      <p class="lesson"><b>學到的重點：</b>「入侵途徑」決定修完會不會再被同一招打，事件整理時要獨立成一個欄位。</p>
+    </article>
+    <article class="card">
+      <header><h3>D｜PHP-CGI 參數注入</h3><span class="tag">CVE-2024-4577</span></header>
+      <ul>
+        <li><b>目的：</b>不需帳號密碼，直接取得伺服器執行權</li>
+        <li><b>手法：</b>在網址中夾帶 PHP 設定參數，讓 PHP-CGI 執行請求內容裡的程式碼</li>
+        <li><b>影響：</b>繞過 WordPress 整層防護，可讀取設定檔、植入後門</li>
+      </ul>
+      <p class="lesson"><b>學到的重點：</b>底層 PHP 版本與執行模式也要納入資產盤點，WAF 可在更新前先擋已知手法。</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="work">
+  <div><span class="eyebrow">Internship</span><h2 id="work">實習中做的事</h2></div>
+  <div class="sheet">
+    <div class="tw">
+    <table>
+      <thead><tr><th>類別</th><th>內容</th></tr></thead>
+      <tbody>
+        <tr><td>主機備份</td><td>將兩台雲端主機、約 20 個網站的檔案與資料庫備份到雲端硬碟，並逐一驗證完整性</td></tr>
+        <tr><td>設備安全</td><td>對 NAS 做資安檢查，並在閘道設定規則，讓它只供內部使用、阻斷對外連線</td></tr>
+        <tr><td>網路實驗</td><td>在公司網路設備上建測試 VLAN 與 WireGuard VPN，結束後完整還原設定</td></tr>
+        <tr><td>資安事件</td><td>協助處理客戶 WordPress 網站遭濫用的事件，從備份鑑識中找出偽裝成外掛的後門</td></tr>
+        <tr><td>上線檢查</td><td>比對正式站與測試站、檢查多語系翻譯遺漏與跑版，整理成錯誤報告</td></tr>
+        <tr><td>流程文件</td><td>把網站開發、維運與系統管理整理成 SOP，用心智圖當知識庫入口</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="caption">客戶名稱與內部系統細節依保密原則省略。</p>
+  </div>
+</section>
+
+<footer>
+  <span class="eyebrow">Contact</span>
+  <p>程式碼與更多專案：<a href="https://github.com/HHY-2404" target="_blank" rel="noopener">github.com/HHY-2404</a>。聯絡方式請見 CAKE 履歷。</p>
+</footer>
+
+</div>
+</body>
+</html>
